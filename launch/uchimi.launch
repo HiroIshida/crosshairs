@@ -1,0 +1,32 @@
+<launch>
+  <node pkg="tf" type="static_transform_publisher"
+    name="link1_broadcaster" args="0.6 0 1.5 0 0 3.1415 base_footprint pseudo_camera 100" />
+
+  <node name="pseudo_camera_info_pub"
+        pkg="jsk_perception" type="image_publisher.py">
+    <remap from="~output" to="~image_color" />
+    <remap from="~output/camera_info" to="~camera_info" />
+    <rosparam subst_value="true">
+      file_name: $(find crosshairs)/script/test.png
+      encoding: bgr8
+      publish_info: true
+      fovx: 84.1
+      fovy: 53.8
+      frame_id: pseudo_camera
+    </rosparam>
+  </node>
+
+  <node name="depth_image_creator"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/DepthImageCreator">
+    <remap from="~input" to="/kinect_head/depth_registered/points"/>
+    <remap from="~info" to="/pseudo_camera_info_pub/camera_info"/>
+    <rosparam>
+      use_approximate: true
+      max_queue_size: 3
+      max_pub_queue_size: 1
+      max_sub_queue_size: 1
+    </rosparam>
+  </node>
+
+</launch>
